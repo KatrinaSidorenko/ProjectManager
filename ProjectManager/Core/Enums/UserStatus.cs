@@ -11,6 +11,7 @@ namespace Core.Enums
         Developer,
         QA,
         StakeHolder,
-        Designer
+        Designer,
+        Admin
     }
 }

@@ -14,6 +14,7 @@ namespace UI
         private readonly UserUIManager _userConsoleManager;
         private readonly TaskUIManager _taskConsoleManager;
         private readonly ProjectUIManager _projectConsoleManager;
+        
 
         public AppManager(UserUIManager userConsoleManager, TaskUIManager taskConsoleManager, ProjectUIManager projectConsoleManager)
         {
@@ -48,15 +49,25 @@ namespace UI
                     Console.ReadKey();
                     Console.Clear();
                     loop = true;
-                }
-                
+                }               
             }
 
             Console.Clear();
 
+            if(!_userConsoleManager.IsAdminSessionNow)
+            {
+                await StandartSession();
+            }
+            else
+            {
+                await AdminSession();
+            }
+        }
+
+        public async Task StandartSession()
+        {
             while (true)
             {
-                
                 Console.WriteLine("1. Task oparations");
                 Console.WriteLine("2. Project oparations");
                 Console.WriteLine("3. User profile oparations");
@@ -67,6 +78,40 @@ namespace UI
                     {1, _taskConsoleManager.PerformOperations },
                     {2, _projectConsoleManager.PerformOperations },
                     {3, _userConsoleManager.PerformOperations }
+                };
+
+                int input = InputValidator.IntegerValidator();
+
+                if (input == 4)
+                {
+                    break;
+                }
+                else if (action.ContainsKey(input))
+                {
+                    await action[input].Invoke();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid oparation number");
+                }
+
+            }
+        }
+
+        public async Task AdminSession()
+        {
+            while (true)
+            {
+                Console.WriteLine("1. Task oparations");
+                Console.WriteLine("2. Project oparations");
+                Console.WriteLine("3. User profile oparations");
+                Console.WriteLine("4. Exit");
+
+                var action = new Dictionary<int, Func<Task>>()
+                {
+                    {1, _taskConsoleManager.PerformAdminOperations },
+                    {2, _projectConsoleManager.PerformAdminOperations },
+                    {3, _userConsoleManager.PerformAdminOperations }
                 };
 
                 int input = InputValidator.IntegerValidator();

@@ -30,35 +30,74 @@ namespace UI.ConsoleManagers
             Dictionary<int, Func<Task>> oparations = new Dictionary<int, Func<Task>>()
             {
                 {1, Create },
-                {2, ShowAllTasks },
-                {3, ShowUserTasks },
-                {4, Delete },
-                {5, Edit },
-                {6, AddTaskToProject },
-                {7, RemoveTaskFromProject },
-                {8,  SeeAllProjectTasks}
+                //{2, ShowAllTasks },
+                {2, ShowUserTasks },
+                {3, Delete },
+                {4, Edit },
+                {5, AddTaskToProject },
+                {6, RemoveTaskFromProject },
+                {7, SeeAllProjectTasks}
             };
 
             while(true)
             {
                 Console.Clear();
                 Console.WriteLine("1. Create task");
-                Console.WriteLine("2. See all tasks");
-                Console.WriteLine("3. See tasks of concrete user");
-                Console.WriteLine("4. Dlete task");
-                Console.WriteLine("5. Edit task");
-                Console.WriteLine("6. Add task to project");
-                Console.WriteLine("7. Remove task from project");
-                Console.WriteLine("8. See all project tasks");
-                Console.WriteLine("9. Exit");
+                //Console.WriteLine("2. See all tasks");
+                Console.WriteLine("2. See your tasks");
+                Console.WriteLine("3. Delete task");
+                Console.WriteLine("4. Edit task");
+                Console.WriteLine("5. Add task to project");
+                Console.WriteLine("6. Remove task from project");
+                Console.WriteLine("7. See all project tasks");
+                Console.WriteLine("8. Exit");
 
                 int input = InputValidator.IntegerValidator();
 
-                if(input == 9)
+                if(input == 8)
                 {
                     break;
                 }
                 else if(oparations.ContainsKey(input))
+                {
+                    Console.Clear();
+                    await oparations[input].Invoke();
+                    Console.ReadKey();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid oparation number");
+                }
+            }
+
+            Console.Clear();
+        }
+
+        public async Task PerformAdminOperations()
+        {
+            await Service.UpdateData();
+            Dictionary<int, Func<Task>> oparations = new Dictionary<int, Func<Task>>()
+            {
+                {1, ShowAllTasks },
+                {2, Delete },
+                {3, SeeAllProjectTasks}
+            };
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("1. See all tasks");
+                Console.WriteLine("2. Delete task");
+                Console.WriteLine("3. See all project tasks");
+                Console.WriteLine("4. Exit");
+
+                int input = InputValidator.IntegerValidator();
+
+                if (input == 4)
+                {
+                    break;
+                }
+                else if (oparations.ContainsKey(input))
                 {
                     Console.Clear();
                     await oparations[input].Invoke();
@@ -211,18 +250,26 @@ namespace UI.ConsoleManagers
 
         public async Task ShowUserTasks()
         {
-            Console.WriteLine("Enter your name for seeing all your tasks: ");
-            string name = Console.ReadLine();
+            //Console.WriteLine("Enter your name for seeing all your tasks: ");
+            //string name = Console.ReadLine();
 
             try
             {
-                var user = await _userConsoleManager.GetByPredicate(user => user.Name == name);
-                var tasks = await Service.GetUserTasks(user.Tasks);
-                await ShowObjects(tasks.ToList(), typeof(Assigment));
+                //var user = await _userConsoleManager.GetByPredicate(user => user.Name == name);
+                var tasks = await Service.GetUserTasks();
+                if(tasks.Count > 0)
+                {
+                    await ShowObjects(tasks.ToList(), typeof(Assigment));
+                }
+                else
+                {
+                    Console.WriteLine("No tasks for you");
+                }
             }
             catch
             {
-                Console.WriteLine("This name wasn't found");
+                //Console.WriteLine("This name wasn't found");
+                Console.WriteLine("Can't get user tasks");
                 await ReinvokeMethodHelper(ShowUserTasks, PerformOperations);
             }           
         }
@@ -230,7 +277,16 @@ namespace UI.ConsoleManagers
         public async Task Delete()
         {
             Console.WriteLine("Available tasks: ");
-            var alltasks = await Service.GetAll();
+            IList<Assigment> alltasks;
+            if(!_userConsoleManager.IsAdminSessionNow)
+            {
+                alltasks = await Service.GetUserTasks();
+            }
+            else
+            {
+                alltasks = await Service.GetAll();
+            }
+            
             var tasks = alltasks.ToArray();
 
             if(tasks.Length != 0)
@@ -255,7 +311,7 @@ namespace UI.ConsoleManagers
         public async Task Edit()
         {
             Console.WriteLine("Available tasks name: ");
-            var alltasks = await Service.GetAll();
+            var alltasks = await Service.GetUserTasks();
             var tasks = alltasks.ToArray();
 
             if (tasks.Length != 0)
@@ -319,7 +375,16 @@ namespace UI.ConsoleManagers
         private async Task SeeAllProjectTasks()
         {
             Console.WriteLine("Available projects: ");
-            var proj = await _projectConsoleManager.GetAll();
+            IEnumerable<Project> proj;
+            
+            if(!_userConsoleManager.IsAdminSessionNow)
+            {
+                proj = await _projectConsoleManager.GetUserProjects();
+            }
+            else
+            {
+                proj = await _projectConsoleManager.GetAll();
+            }
             var projects = proj.ToArray();
 
             if (projects.Length > 0)
@@ -419,7 +484,7 @@ namespace UI.ConsoleManagers
         private async Task<(Project, Assigment)> BaseGetProjectAndTask()
         {
             Console.WriteLine("Available projects: ");
-            var proj = await _projectConsoleManager.GetAll();
+            var proj = await _projectConsoleManager.GetUserProjects();
             var projects = proj.ToArray();
 
             if(projects.Length > 0)

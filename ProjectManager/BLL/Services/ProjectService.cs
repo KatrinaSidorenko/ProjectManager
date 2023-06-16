@@ -22,17 +22,18 @@ namespace BLL.Services
             _userService = userService;
         }
 
-        public async Task<IList<Project>> GetUserProjects(User user)
+        public async Task<IList<Project>> GetUserProjects()
         {
             var projects = await GetAll();
             var userProjetcs = new List<Project>();
+            var currentUser = await _userService.GetCurrentUser();
 
             foreach(var project in projects)
             {
                 var projectUsers = await GetAllProjectUsers(project);
                 foreach(var userProject in projectUsers)
                 {
-                    if (userProject.Id.Equals(user.Id))
+                    if (userProject.Id.Equals(currentUser.Id))
                     {
                         userProjetcs.Add(project);
                     }

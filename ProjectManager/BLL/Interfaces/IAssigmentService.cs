@@ -20,7 +20,7 @@ namespace BLL.Interfaces
         Task ChangeTaskPriority(Guid id, int newPriority);
         Task ChangeTaskExecutor(Guid id, User newExecutor);
         Task ChangeTaskStatus(Guid id, AssigmentStatus newStatus);
-        Task<IList<Assigment>> GetUserTasks(IList<Guid> tasksId);
+        Task<IList<Assigment>> GetUserTasks();
         Task AddExecutorsToTask(Guid taskId, IList<User> users);
         Task AddTaskToProject(Guid taskId, Project project);
         Task RemoveTaskFromProject(Guid taskId, Project project);

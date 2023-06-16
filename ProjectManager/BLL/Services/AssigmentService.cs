@@ -23,9 +23,12 @@ namespace BLL.Services
             _userService = userService;
         }
 
-        public async Task<IList<Assigment>> GetUserTasks(IList<Guid> tasksId)
+        public async Task<IList<Assigment>> GetUserTasks()
         {
             var tasks = new List<Assigment>();
+
+            var currentUser = await _userService.GetCurrentUser();
+            var tasksId = currentUser.Tasks;
 
             foreach (var taskId in tasksId)
             {

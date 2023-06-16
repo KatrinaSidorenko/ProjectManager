@@ -28,27 +28,65 @@ namespace UI.ConsoleManagers
             Dictionary<int, Func<Task>> oparations = new Dictionary<int, Func<Task>>()
             {
                 {1, Create },
-                {2, ShowAllProjects },
-                {3, ShowUserProjects },
-                {4, Delete },
-                {5, Edit },
-                {6, ShowSortedProjectTasks }
+                //{2, ShowAllProjects },
+                {2, ShowUserProjects },
+                {3, Delete },
+                {4, Edit },
+                {5, SortProjectTasks }
             };
             
             while (true)
             {
                 Console.Clear();
                 Console.WriteLine("1. Create project");
-                Console.WriteLine("2. See all projects");
-                Console.WriteLine("3. See projects of concrete user");
-                Console.WriteLine("4. Dlete project");
-                Console.WriteLine("5. Edit project");
-                Console.WriteLine("6. Sort project tasks");
-                Console.WriteLine("7. Exit");
+                //Console.WriteLine("2. See all projects");
+                Console.WriteLine("2. See your projects");
+                Console.WriteLine("3. Dlete project");
+                Console.WriteLine("4. Edit project");
+                Console.WriteLine("5. Sort project tasks");
+                Console.WriteLine("6. Exit");
 
                 int input = InputValidator.IntegerValidator();
 
                 if (input == 7)
+                {
+                    break;
+                }
+                else if (oparations.ContainsKey(input))
+                {
+                    Console.Clear();
+                    await oparations[input].Invoke();
+                    Console.ReadKey();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid oparation number");
+                }
+            }
+
+            Console.Clear();
+        }
+
+        public async Task PerformAdminOperations()
+        {
+            await Service.UpdateUserData();
+
+            Dictionary<int, Func<Task>> oparations = new Dictionary<int, Func<Task>>()
+            {
+                {1, ShowAllProjects },
+                {2, Delete }
+            };
+
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("1. See all projects");
+                Console.WriteLine("2. Dlete project");
+                Console.WriteLine("3. Exit");
+
+                int input = InputValidator.IntegerValidator();
+
+                if (input == 3)
                 {
                     break;
                 }
@@ -72,7 +110,7 @@ namespace UI.ConsoleManagers
             await ShowObjects(projects.ToList(), typeof(Project));
         }
 
-        private async Task ShowSortedProjectTasks()
+        private async Task SortProjectTasks()
         {
             Console.WriteLine("Avalable projects: ");
             var proj = await Service.GetAll();
@@ -154,18 +192,27 @@ namespace UI.ConsoleManagers
 
         public async Task ShowUserProjects()
         {
-            Console.WriteLine("Enter your name for seeing all your projects: ");
-            string name = Console.ReadLine();
+            //Console.WriteLine("Enter your name for seeing all your projects: ");
+            //string name = Console.ReadLine();
 
             try
             {
-                var user = await _userConsoleManager.GetByPredicate(user => user.Name == name);
-                var tasks = await Service.GetUserProjects(user);
-                await ShowObjects(tasks.ToList(), typeof(Project));
+                //var user = await _userConsoleManager.GetByPredicate(user => user.Name == name);
+                var projects = await Service.GetUserProjects();
+                if(projects.Count > 0)
+                {
+                    await ShowObjects(projects.ToList(), typeof(Project));
+                }
+                else
+                {
+                    Console.WriteLine("No project for you");
+                }
+                
             }
             catch
             {
-                Console.WriteLine("This name wasn't found");
+                Console.WriteLine("Can't get user projects");
+                //Console.WriteLine("This name wasn't found");
                 await ReinvokeMethodHelper(ShowUserProjects, PerformOperations);
             }
         }
@@ -173,7 +220,15 @@ namespace UI.ConsoleManagers
         public async Task Delete()
         {
             Console.WriteLine("Avalable projects: ");
-            var proj = await Service.GetAll();
+            IEnumerable<Project> proj;
+            if(!_userConsoleManager.IsAdminSessionNow)
+            {
+                proj = await Service.GetUserProjects();
+            }
+            else
+            {
+                proj = await Service.GetAll();
+            }
             var projects = proj.ToArray();
             for (var i = 0; i < projects.Length; i++)
             {
@@ -190,7 +245,7 @@ namespace UI.ConsoleManagers
             }
             else
             {
-                Console.WriteLine("No tasks");
+                Console.WriteLine("No projects");
             }
             
         }
@@ -198,7 +253,7 @@ namespace UI.ConsoleManagers
         public async Task Edit()
         {
             Console.WriteLine("Avalable projects for editing: ");
-            var proj = await Service.GetAll();
+            var proj = await Service.GetUserProjects();
             var projects = proj.ToArray();
             if (projects.Length > 0)
             {
@@ -268,6 +323,13 @@ namespace UI.ConsoleManagers
             Console.Clear();
             Console.WriteLine($"% of comleted tasks PROJECT NAME --> {project.Name}: {await Service.ProgressCheck(project.Id)}");
             Console.ReadLine();
+        }
+
+        public async Task<IList<Project>> GetUserProjects()
+        {
+            var projects = await Service.GetUserProjects();
+
+            return projects;
         }
     }
 }

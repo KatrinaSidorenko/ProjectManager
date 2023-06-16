@@ -97,5 +97,19 @@ namespace BLL.Services
         {
             await GenericEdit(_currentUser.Id, status, "UserStatus");
         }
+
+        public async Task<bool> IsAdminExist()
+        {
+            var users = await GetAll();
+            foreach(var user in users)
+            {
+                if(user.UserStatus == UserStatus.Admin)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

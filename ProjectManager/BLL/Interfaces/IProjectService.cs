@@ -17,7 +17,7 @@ namespace BLL.Interfaces
         Task SortTasksByPriority(Guid projectId);
         Task<double> ProgressCheck(Guid projectId);
         Task<IList<Assigment>> GetAllProjectTasks(Guid projectId);
-        Task<IList<Project>> GetUserProjects(User user);
+        Task<IList<Project>> GetUserProjects();
         Task UpdateUserData();
     }
 }

@@ -17,14 +17,16 @@ namespace UI.ConsoleManagers
     public class UserUIManager : MainUIManager<User, IUserService>, IConsoleManager<User>
     {
         private Dictionary<string, object> _userPropertiesValues = new Dictionary<string, object>();
-        
+        public bool IsAdminExist;
+        public bool IsAdminSessionNow;
+
         public UserUIManager(IUserService service) : base(service)
         {
+            IsAdminExist = service.IsAdminExist().Result;
         }
 
         public async Task PerformOperations()
         {
-
             while (true)
             {
                 Console.Clear();
@@ -52,6 +54,61 @@ namespace UI.ConsoleManagers
             Console.Clear();
         }
 
+        public async Task PerformAdminOperations()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("1. Change user status");
+                Console.WriteLine("2. Exit");
+
+                int input = InputValidator.IntegerValidator();
+
+                if (input == 2)
+                {
+                    break;
+                }
+                else if (input == 1)
+                {
+                    Console.Clear();
+                    await ChangeUserStatus();
+                    Console.ReadKey();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid oparation number");
+                }
+            }
+
+            Console.Clear();
+        }
+
+        public async Task ChangeUserStatus()
+        {
+            var tempallUsers = await Service.GetAll();
+            var allUsers = tempallUsers.ToArray();
+            if (allUsers.Length != 0)
+            {
+                for (var i = 0; i < allUsers.Length; i++)
+                {
+                    Console.WriteLine($"--------------------------- ({i + 1})");
+                    await ShowObjects(new List<User> { allUsers[i] }, typeof(User));
+                }
+
+                int userIndex = InputValidator.IndexValidator(allUsers.Length);
+                var user = allUsers[userIndex - 1];
+                _userPropertiesValues.Clear();
+                await GetUserStatus();
+                user.UserStatus = (UserStatus)_userPropertiesValues["UserStatus"];
+                await Service.Update(user.Id, user);
+
+            }
+            else
+            {
+                Console.WriteLine("No users");
+                Console.ReadKey();
+            }
+        }
         public async Task ShowAllUsers()
         {
             var users = await GetAll();
@@ -126,39 +183,55 @@ namespace UI.ConsoleManagers
 
         private async Task GetUserStatus()
         {
-            Console.WriteLine("Available user statuses: ");
-
-            foreach (var userStatus in Enum.GetValues(typeof(UserStatus)))
+            if(IsAdminExist)
             {
-                Console.WriteLine($"\t{userStatus}");
-            }
+                Console.WriteLine("Available user statuses: ");
 
-            Console.Write("Enter user status: ");
+                foreach (var userStatus in Enum.GetValues(typeof(UserStatus)))
+                {
+                    if((UserStatus)userStatus != UserStatus.Admin)
+                    {
+                        Console.WriteLine($"\t{userStatus}");
+                    }                   
+                }
 
-            UserStatus result;
-            string status = Console.ReadLine();
+                Console.Write("Enter user status: ");
 
-            if (Enum.TryParse(status, out result))
-            {
-                _userPropertiesValues.Add("UserStatus", result);
+                UserStatus result;
+                string status = Console.ReadLine();
+
+                if (Enum.TryParse(status, out result))
+                {
+                    _userPropertiesValues.Add("UserStatus", result);
+                }
+                else
+                {
+                    await ReinvokeMethodHelper(GetUserStatus, WriteLine);
+                    Console.ReadKey();
+                }
             }
             else
             {
-                await ReinvokeMethodHelper(GetUserStatus, WriteLine);
-                Console.ReadKey();
-            }
-
+                _userPropertiesValues.Add("UserStatus", UserStatus.Admin);
+                IsAdminSessionNow = true;
+                IsAdminExist = true;
+            }          
         }
 
         public async Task<Result<User>> Authentificate()
         {
             Console.WriteLine("Enter user name: ");
             string name = Console.ReadLine();
-          
+                   
             try
             {
                 if (await Service.CheckUserNameAvailability(name))
                 {
+                    var user = await Service.GetByPredicate(user => user.Name == name);
+                    if (user.UserStatus.Equals(UserStatus.Admin))
+                    {
+                        IsAdminSessionNow = true;
+                    }
                     _userPropertiesValues.Clear();
                     _userPropertiesValues.Add("Name", name);
                     await GetUserEmail();

@@ -20,5 +20,6 @@ namespace BLL.Interfaces
         Task<bool> CheckUserNameAvailability(string username);
         Task<IList<User>> GetStakeHolders();
         Task<User> GetCurrentUser();
+        Task<bool> IsAdminExist();
     }
 }
