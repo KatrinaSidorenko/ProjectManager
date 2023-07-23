@@ -1,0 +1,59 @@
+﻿@using Core.ViewModels
+@using Core.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AppUser> UserManager
+@model ProjectEditViewModel
+
+<div class="row m-5">
+    <h1 class="text-center">Edit project page</h1>
+    @if (TempData["Error"] != null)
+    {
+        <div class="col-md-12 alert alert-danger">
+            <span><b>Sorry!</b> - @TempData["Error"]</span>
+        </div>
+    }
+    <div class="row">
+        <div class="col-md-8 offset-2">
+            <form method="post" asp-action="EditProject" enctype="multipart/form-data">
+                <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+    
+    
+                <div class="form-group m-2">
+                    <label asp-for="Name">Name</label>
+                    <input asp-for="Name" class="form-control" placeholder="Name">
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group m-2">
+                    <label asp-for="Description">Description</label>
+                    <input asp-for="Description" class="form-control" placeholder="Description">
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+    
+                <h6>Choose project owner: </h6>
+
+                @foreach (var executor in Model.ResponsibleUsersCheckboxes)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input"
+                               type="radio"
+                               value="@executor.Value.Id"
+                               name="ProjectOwnerId"
+                               id="checkbox_@executor.Value.Id"
+                               checked="@executor.IsActive">
+                        @{
+                            var user = await UserManager.FindByIdAsync(executor.Value.Id);
+                            var executorRole = await UserManager.GetRolesAsync(user);
+                        }
+                        <label class="form-check-label" for="checkbox_@executor.Value.Id">
+                            @executor.Description, Role: @executorRole.FirstOrDefault()
+                        </label>
+                    </div>
+                }
+                <hr />
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>

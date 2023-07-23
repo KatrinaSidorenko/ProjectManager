@@ -1,0 +1,76 @@
+﻿@using Core.ViewModels
+@using Core.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AppUser> UserManager
+@model ProjectCreateViewModel
+
+@if (TempData["Error"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span><b>Sorry!</b> - @TempData["Error"]</span>
+    </div>
+}
+<div class="navbar-container">
+</div>
+<div class="main-container">
+    <section class="space-sm">
+        <div class="container">
+            <div class="row mb-5">
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <div class="row flex-md-row card card-md">
+                <div class="card-body bg-light">
+                    <div class="text-center mb-5">
+                        <h1 class="h2 mb-2">Create new project</h1>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-lg-5">
+                            <form method="post" asp-action="CreateProject" enctype="multipart/form-data">
+                                <div class="form-row form-group">
+                                    <div class="col">
+                                        <input asp-for="Name" class="form-control form-control-lg" placeholder="Name" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                    <div class="col">
+                                        <input asp-for="Description" class="form-control form-control-lg" placeholder="Description" />
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>    
+                                </div>
+                                <h6>Choose project owner: </h6>
+
+                                @foreach (var executor in Model.ResponsibleUsersCheckboxes)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="radio"
+                                               value="@executor.Value.Id"
+                                               name="ProjectOwnerId"
+                                               id="checkbox_@executor.Value.Id"
+                                               checked="@executor.IsActive">
+                                        @{
+                                            var user = await UserManager.FindByIdAsync(executor.Value.Id);
+                                            var executorRole = await UserManager.GetRolesAsync(user);
+                                        }
+                                        <label class="form-check-label" for="checkbox_@executor.Value.Id">
+                                            @executor.Description, Role: @executorRole.FirstOrDefault()
+                                        </label>
+                                    </div>
+                                }
+                                <hr />
+                                <div class="form-row form-group">
+                                    <div class="col">
+                                        <input class="btn btn-block btn-success btn-lg" type="submit" value="Create Project" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+</div>

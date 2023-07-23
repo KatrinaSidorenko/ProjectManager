@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Core.Models
+@using Core.Enums
+
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Home Page";
+}
+<!-- Masthead-->
+<section class="masthead bg-dark space-md">
+    @*<img alt="Image"  class="bg-image position-absolute opacity-20" />*@
+    <div class="container-fluid">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+                <div class="col-lg-8 align-self-end">
+                    <h1 class="text-white font-weight-bold">Welcome back, @User.Identity.Name!</h1>
+                    <hr class="divider" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+                <div class="col-lg-8 align-self-end">
+                    <h1 class="text-white font-weight-bold">LogIn or Register</h1>
+                    <hr class="divider" />
+                </div>
+                <div class="col-lg-8 align-self-baseline">
+                    <a class="btn btn-outline-light btn-lg m-2" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                    <a class="btn btn-outline-light btn-lg m-2" asp-area="" asp-controller="Account" asp-action="Login">Log In</a>
+                </div>
+            </div>
+        }       
+    </div>
+</section>
+
+<style>
+    .masthead {
+        padding-top: 180px;
+        padding-bottom: 340px;
+        background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%), url(https://images.pexels.com/photos/735812/pexels-photo-735812.jpeg?cs=srgb&dl=pexels-anton-atanasov-735812.jpg&fm=jpg);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: scroll;
+        background-size: cover;
+    }
+</style>

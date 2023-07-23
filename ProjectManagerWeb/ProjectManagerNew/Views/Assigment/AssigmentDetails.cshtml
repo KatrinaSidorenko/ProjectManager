@@ -1,0 +1,119 @@
+﻿@using Core.ViewModels
+@using Core.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AppUser> UserManager
+@model AssigmentDetailsViewModel
+
+<div class="container-fluid">
+
+    <div class="container">
+        <!-- Title -->
+        <div class="d-flex justify-content-between align-items-center py-3">
+            <h2 class="h5 mb-0"><a href="#" class="text-muted"></a>Task name: @Model.Name</h2>
+        </div>
+
+        <!-- Main content -->
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Details -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div>
+                                <div class="me-3">Start Date: @Model.StartDate</div>
+                                <hr>
+                                <div class="me-3">End Date: @Model.EndDate</div>
+                                <hr>
+                                <div class="me-3">Priority: @Model.Priority</div>
+                                <hr>
+                                <div class="badge rounded-pill bg-info">@Model.Status</div>
+                            </div>
+                            <div class="d-inline-block">
+                                <a asp-controller="Assigment" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                                    Edit
+                                </a>              
+                            </div>
+                        </div>
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>Responsible users for task compliting:</tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var executor in Model.ResponsibleUsers)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex mb-2">
+                                                <div class="flex-lg-grow-1 ms-3">
+                                                    <h6 class="small mb-0">@executor.UserName</h6>
+                                                    <span class="small">@executor.Email</span>
+                                                    @{
+                                                        var user = await UserManager.FindByIdAsync(executor.Id);
+                                                        var executorRole = await UserManager.GetRolesAsync(user);
+                                                    }
+                                                    <span class="small">User role: @executorRole.FirstOrDefault()</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                                
+                               
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <div class="col-lg-4">
+                <!-- Customer Notes -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h3 class="h6">Description</h3>
+                        <p>@Model.Description</p>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <!-- Shipping information -->
+                    <div class="card-body">
+                        <h3 class="h6">Project Data</h3>
+                        <strong>@Model.AssigmentProject.Name</strong>
+                        <hr>
+                        <h3 class="h6">@Model.AssigmentProject.Description</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: #eee;
+    }
+
+    .card {
+        box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
+    }
+
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 0 solid rgba(0,0,0,.125);
+        border-radius: 1rem;
+    }
+
+    .text-reset {
+        --bs-text-opacity: 1;
+        color: inherit !important;
+    }
+
+    a {
+        color: #5465ff;
+        text-decoration: none;
+    }
+</style>

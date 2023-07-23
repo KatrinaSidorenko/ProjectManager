@@ -1,0 +1,97 @@
+﻿@using Core.ViewModels
+@using Core.Enums
+@using Core.Models
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<AppUser> UserManager
+@model AssigmentCreateViewModel
+
+@if (TempData["Error"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span><b>Sorry!</b> - @TempData["Error"]</span>
+    </div>
+}
+<div class="navbar-container">
+</div>
+<div class="main-container">
+    <section class="space-sm">
+        <div class="container">
+            <div class="row mb-5">
+                <!--end of col-->
+            </div>
+            <!--end of row-->
+            <div class="row flex-md-row card card-md">
+                <div class="card-body bg-light">
+                    <div class="text-center mb-5">
+                        <h1 class="h2 mb-2">Create new task</h1>
+                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-lg-5">
+                            <form method="post" asp-action="CreateAssigment" enctype="multipart/form-data">
+                                <input type="hidden" id="CurrentProjectId" name="CurrentProjectId" value="@Model.CurrentProjectId" />
+                                <div class="form-row form-group">
+                                    <div class="col">
+                                        <input asp-for="Name" class="form-control form-control-lg" placeholder="Name" />
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                    <div class="col">
+                                        <input asp-for="Description" class="form-control form-control-lg" placeholder="Description" />
+                                        <span asp-validation-for="Description" class="text-danger"></span>
+                                    </div>
+                                   
+                                    <div class="col">
+                                        <input asp-for="StartDate" class="form-control form-control-lg" placeholder="StartDate" />
+                                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                                    </div>
+                                    <div class="col">
+                                        <input asp-for="EndDate" class="form-control form-control-lg" placeholder="EndDate" />
+                                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    </div>
+                                    <div class="col">
+                                        <input asp-for="Priority" class="form-control form-control-lg" placeholder="Priority" />
+                                        <span asp-validation-for="Priority" class="text-danger"></span>
+                                    </div>
+                                    <div class="col">
+                                        <select asp-for="Status" asp-items="@Html.GetEnumSelectList<AssigmentStatus>()" class="form-control form-control-lg">
+                                            <option>--Select--</option>
+                                        </select>
+                                        <span asp-validation-for="Status" class="text-danger"></span>
+                                    </div> 
+                                </div>
+                                <h6>Choose responsible users for task compliting: </h6>
+
+                                @foreach (var executor in Model.ResponsibleUsersCheckboxes)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               value="@executor.Value.Id"
+                                               name="ResponsibleUsers"
+                                               id="checkbox_@executor.Value.Id"
+                                               checked="@executor.IsActive">
+                                        @{
+                                            var user = await UserManager.FindByIdAsync(executor.Value.Id);
+                                            var executorRole = await UserManager.GetRolesAsync(user);
+                                        }
+                                        <label class="form-check-label" for="checkbox_@executor.Value.Id">
+                                            @executor.Description, Role: @executorRole.FirstOrDefault()
+                                        </label>
+                                    </div>
+                                }
+                                <hr />
+                                <div class="form-row form-group">
+                                    <div class="col">
+                                        <input class="btn btn-block btn-success btn-lg" type="submit" value="Create Task" />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end of container-->
+    </section>
+    <!--end of section-->
+</div>

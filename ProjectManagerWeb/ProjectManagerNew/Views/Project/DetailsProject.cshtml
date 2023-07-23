@@ -1,0 +1,38 @@
+﻿@using Core.ViewModels
+@using Core.Models
+@using Microsoft.AspNetCore.Identity
+
+@model ProjectViewModel
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<div class="p-5 bg-light">
+    <h4 class="mb-3">Project Overview</h4>
+    <h1 class="mb-3">Project name: @Model.Name</h1>
+    <h4 class="mb-3">Project description: @Model.Description</h4>
+    @if(Model.ProjectOwner != null)
+    {
+        <h4 class ="mb-3">Project owner name: @Model.ProjectOwner.UserName</h4>
+        <h4 class="mb-3">Project owner email: @Model.ProjectOwner.Email</h4>
+    }
+    <hr />
+    <h4>Percentage of completed tasks: @Model.AmountOfCompletedAssigments %</h4>
+    
+    <br /><br />
+    <h5>Tasks name: </h5>
+    <ul>
+        @foreach (var asssigment in Model.Assigments)
+        {
+            <li>@asssigment.Name</li>
+        }
+    </ul>
+    <br /><br />
+    <a type="button" class="btn btn-primary" asp-controller="Assigment" asp-action="ShowProjectTasks" asp-route-id="@Model.Id">See all project tasks</a>
+    <hr/>
+    @if (!User.IsInRole("Admin"))
+    {
+        <a type="button" class="btn btn-primary" asp-controller="Assigment" asp-action="Create" asp-route-id="@Model.Id">Add task</a>
+    }   
+</div>
+
+

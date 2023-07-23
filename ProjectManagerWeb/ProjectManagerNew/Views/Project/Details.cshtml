@@ -1,0 +1,43 @@
+﻿@using Core.Models
+@using Core.ViewModels
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppUser> SignInManager
+@model IEnumerable<ProjectDetailsViewModel>
+
+
+<div class="position-relative m-5 text-center bg-light">
+    <div class="col-md-5 p-lg-5 mx-auto my-5">
+        <h1 class="display-4 font-weight-normal pb-3">Available projects</h1>
+        @if (User.IsInRole("StakeHolder"))
+        {
+            <a type="button" class="btn btn-outline-secondary" asp-controller="Project" asp-action="Create">Create new project</a>
+        }        
+    </div>
+</div>
+<div class="row">
+    @foreach(var projectVM in Model)
+    {
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Name: @projectVM.Name</h5>
+                    
+                    <p class="card-text">Description: @projectVM.Description</p>
+                    <a type="button" class="btn btn-primary" asp-controller="Project" asp-action="DetailsProject" asp-route-id="@projectVM.Id">
+                        View details
+                    </a>
+                    @if (User.IsInRole("StakeHolder"))
+                    {
+                        <a type="button" class="btn btn-outline-danger" asp-controller="Project" asp-action="Delete" asp-route-id="@projectVM.Id">
+                            Delete project
+                        </a>
+                        <input type="radio" class="btn-check" name="options-outlined" id="success-outlined" autocomplete="off" checked>
+                        <a asp-controller="Project" asp-action="Edit" asp-route-id="@projectVM.Id" class="btn btn-outline-success" for="success-outlined">
+                            Edit
+                        </a>
+                    }                   
+                </div>
+            </div>
+        </div>
+    }
+</div>
