@@ -112,7 +112,15 @@ namespace UI.ConsoleManagers
         public async Task ShowAllUsers()
         {
             var users = await GetAll();
-            await ShowObjects(users.ToList(), typeof(User));
+            var usersExecptAdmin = new List<User>();
+            foreach (var user in users)
+            {
+                if(user.UserStatus != UserStatus.Admin)
+                {
+                    usersExecptAdmin.Add(user);
+                }
+            }
+            await ShowObjects(usersExecptAdmin.ToList(), typeof(User));
         }
         public async Task<Result<User>> Create()
         {
